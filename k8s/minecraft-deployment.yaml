@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minecraft-server
+  labels:
+    app: minecraft
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: minecraft
+  template:
+    metadata:
+      labels:
+        app: minecraft
+    spec:
+      containers:
+        # 1. Main Minecraft Server
+        - name: minecraft
+          image: itzg/minecraft-server:java17
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 25565
+              name: minecraft
+          env:
+            - name: EULA
+              value: "TRUE"
+            - name: TYPE
+              value: "PAPER"
+            - name: ONLINE_MODE
+              value: "FALSE"
+          volumeMounts:
+            - name: minecraft-data
+              mountPath: /data
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "500m"
+            limits:
+              memory: "4Gi"
+              cpu: "2000m"
+
+        # 2. Sidecar Log Parser (Placeholder for Step 3)
+        - name: log-parser
+          image: python:3.9-slim
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo "Waiting for logs..."
+              while [ ! -f /logs/logs/latest.log ]; do sleep 5; done
+              echo "Log found! Starting tail..."
+              tail -f /logs/logs/latest.log
+          volumeMounts:
+            - name: minecraft-data
+              mountPath: /logs
+              readOnly: true
+
+      volumes:
+        - name: minecraft-data
+          persistentVolumeClaim:
+            claimName: minecraft-pvc
+
