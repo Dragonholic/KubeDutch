@@ -40,24 +40,32 @@ spec:
               memory: "4Gi"
               cpu: "2000m"
 
-        # 2. Sidecar Log Parser (Placeholder for Step 3)
+        # 2. Sidecar Log Parser (업데이트됨)
         - name: log-parser
-          image: python:3.9-slim
-          imagePullPolicy: IfNotPresent
-          command: ["/bin/sh", "-c"]
-          args:
-            - |
-              echo "Waiting for logs..."
-              while [ ! -f /logs/logs/latest.log ]; do sleep 5; done
-              echo "Log found! Starting tail..."
-              tail -f /logs/logs/latest.log
+          image: kubedutch-parser:latest
+          imagePullPolicy: Never # 로컬(Minikube) 빌드 이미지 사용 강제
+          env:
+            - name: RPC_URL
+              valueFrom:
+                secretKeyRef:
+                  name: minecraft-secret
+                  key: RPC_URL
+            - name: PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: minecraft-secret
+                  key: PRIVATE_KEY
+            - name: CONTRACT_ADDRESS
+              valueFrom:
+                secretKeyRef:
+                  name: minecraft-secret
+                  key: CONTRACT_ADDRESS
           volumeMounts:
             - name: minecraft-data
               mountPath: /logs
-              readOnly: true
+              readOnly: true # 로그 읽기 전용
 
       volumes:
         - name: minecraft-data
           persistentVolumeClaim:
             claimName: minecraft-pvc
-

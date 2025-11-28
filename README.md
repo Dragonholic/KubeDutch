@@ -19,6 +19,9 @@ Standard Kubernetes 환경에서 마인크래프트 서버를 운영하고, 사�
 
 ## 🛠 Installation & Deployment
 
+> **🍓 Raspberry Pi User?**  
+> 라즈베리 파이에 배포하려면 [Raspberry Pi Guide](docs/RASPBERRY_PI_GUIDE.md)를 참고하세요. 아키텍처(ARM64) 및 메모리 설정이 다릅니다.
+
 ### 1. Smart Contract Deployment
 1. `contracts/UsageLedger.sol`을 Remix IDE(https://remix.ethereum.org)에 복사합니다.
 2. Injected Provider (MetaMask)를 선택하고 Sepolia 네트워크에 배포합니다.
