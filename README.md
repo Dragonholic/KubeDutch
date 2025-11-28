@@ -1,74 +1,45 @@
-# KubeDutch: Kubernetes Minecraft Ledger
+# 🛰️ KubeDutch: Satellite Cluster Resource Ledger PoC
+> **"조작 불가능한 위성 클러스터 자원 정산 시스템을 위한 지상 검증 모델"**
+>
+> **Ground Proof-of-Concept for Immutable Satellite Resource Auditing System**
 
-Standard Kubernetes 환경에서 마인크래프트 서버를 운영하고, 사용자 접속 기록을 이더리움 세폴리아(Sepolia) 블록체인에 투명하게 기록하는 시스템입니다.
+## 📖 Project Motivation (연구 배경)
+분산 시스템(Distributed Systems), 특히 **위성 클러스터(Satellite Cluster)** 환경에서는 다수의 위성이 협업하여 임무를 수행합니다. 이때 각 노드의 자원(CPU, 통신 대역폭 등) 사용량을 **위변조 불가능(Immutable)하고 투명하게(Transparent)** 기록하여 정산하는 것은 신뢰성 확보에 필수적입니다.
 
-## 🏗 Architecture
+본 프로젝트는 이러한 위성 환경을 지상에서 모사하기 위해, **마인크래프트 게임 워크로드**를 위성 임무로 가정하고, **이더리움 블록체인**을 활용하여 신뢰할 수 있는 자원 사용 원장(Ledger)을 구축하는 실험적 연구입니다.
 
-1. **Infrastructure**: Kubernetes (Deployment, PVC, Service)
-2. **Server**: Minecraft Java Edition (PaperMC)
-3. **Agent**: Python Sidecar Container (Log Parser -> Web3.py -> Ethereum)
-4. **Blockchain**: Ethereum Sepolia Testnet (Solidity Smart Contract)
-5. **Frontend**: React Dashboard (Ethers.js)
+## 🏗 Architecture (시스템 구조)
 
-## 🚀 Prerequisite
+위성 환경의 하드웨어 제약과 이기종성(Heterogeneity)을 반영하여 **하이브리드 분산 아키텍처**를 설계했습니다.
 
-- Kubernetes Cluster (Minikube, Kind, or Cloud)
-- Python 3.9+
-- Node.js 18+
-- Ethereum Wallet (MetaMask) with Sepolia ETH
+1.  **Mission Node (임무 위성) 🖥️**:
+    *   **Role**: 고부하 워크로드 수행
+    *   **Simulated by**: High-Performance PC
+    *   **Workload**: Minecraft Server (CPU/RAM Intensive)
+    *   **Agent**: Log Sender (Telemetry Transmission)
 
-## 🛠 Installation & Deployment
+2.  **Telemetry Node (관제 위성) 🍓**:
+    *   **Role**: 로그 수집, 검증 및 온체인 기록
+    *   **Simulated by**: Raspberry Pi 4 (Edge Device)
+    *   **System**: Lightweight Kubernetes (K3s)
+    *   **Service**: Log Parser API, Web Dashboard
 
-> **🍓 Raspberry Pi User?**  
-> 라즈베리 파이에 배포하려면 [Raspberry Pi Guide](docs/RASPBERRY_PI_GUIDE.md)를 참고하세요. 아키텍처(ARM64) 및 메모리 설정이 다릅니다.
+3.  **Immutable Ledger (불변 장부) 🔗**:
+    *   **Role**: 영구적이고 위변조 불가능한 데이터 저장
+    *   **Network**: Ethereum Sepolia Testnet
+    *   **Smart Contract**: `UsageLedger.sol`
 
-### 1. Smart Contract Deployment
-1. `contracts/UsageLedger.sol`을 Remix IDE(https://remix.ethereum.org)에 복사합니다.
-2. Injected Provider (MetaMask)를 선택하고 Sepolia 네트워크에 배포합니다.
-3. 배포된 **Contract Address**를 복사해둡니다.
+## 🚀 Key Features
+- **Data Integrity**: 블록체인 기술을 도입하여 관리자조차 로그를 임의로 수정할 수 없음.
+- **Edge Computing**: 기록 부하를 임무 노드에서 분리하여 전체 시스템 성능 최적화.
+- **Standardization**: EVM 표준 및 Standard Kubernetes API 준수.
 
-### 2. Configuration
-루트 디렉토리에 `.env` 파일을 생성하고 다음 정보를 입력합니다. (보안 주의)
+## 🛠 Tech Stack
+- **Infra**: Kubernetes (K3s), Docker
+- **Blockchain**: Solidity, Ethereum Sepolia, Ethers.js
+- **Backend**: Python (FastAPI, Web3.py)
+- **Frontend**: React (Vite)
+- **Simulation**: Minecraft Java Edition
 
-```env
-# Blockchain Config
-RPC_URL=https://sepolia.infura.io/v3/YOUR_INFURA_KEY
-PRIVATE_KEY=0xYOUR_PRIVATE_KEY_HERE
-CONTRACT_ADDRESS=0xDEPLOYED_CONTRACT_ADDRESS
-
-# Dashboard Config (Optional)
-VITE_CONTRACT_ADDRESS=0xDEPLOYED_CONTRACT_ADDRESS
-```
-
-### 3. Build & Deploy Agent (Docker & K8s)
-K8s 클러스터가 로컬 이미지를 사용할 수 있도록 설정하거나, Docker Hub에 이미지를 푸시해야 합니다.
-
-```bash
-# Docker Image 빌드
-docker build -t kubedutch-parser:latest ./parser
-
-# (Minikube 사용 시)
-minikube image load kubedutch-parser:latest
-
-# Kubernetes 배포
-kubectl apply -f k8s/minecraft-pvc.yaml
-kubectl apply -f k8s/minecraft-deployment.yaml # image: kubedutch-parser:latest 확인 필요
-kubectl apply -f k8s/minecraft-service.yaml
-```
-
-### 4. Run Dashboard (Web)
-```bash
-cd web
-npm install
-
-# src/App.jsx 내의 CONTRACT_ADDRESS 변수를 배포한 주소로 변경하세요.
-npm run dev
-```
-
-이제 브라우저에서 `http://localhost:8080`으로 접속하여 대시보드를 확인합니다.
-
-## 🧪 Testing
-1. 마인크래프트 클라이언트로 `localhost:30001`에 접속합니다.
-2. 게임에 접속했다가 로그아웃합니다.
-3. `parser` 컨테이너 로그를 확인합니다: `kubectl logs -f deployment/minecraft-server -c log-parser`
-4. 트랜잭션이 성공하면, 웹 대시보드에서 새로고침하여 기록을 확인합니다.
+## 🚀 Quick Start
+자세한 실행 방법은 [STEP_BY_STEP.md](STEP_BY_STEP.md) 및 [RASPBERRY_PI_GUIDE.md](docs/RASPBERRY_PI_GUIDE.md)를 참고하세요.

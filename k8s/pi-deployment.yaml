@@ -1,0 +1,54 @@
+# 라즈베리 파이 전용: 마인크래프트 서버 없이 API 서버만 실행
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubedutch-api
+  labels:
+    app: kubedutch-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kubedutch-api
+  template:
+    metadata:
+      labels:
+        app: kubedutch-api
+    spec:
+      containers:
+        - name: api-server
+          image: kubedutch-api:latest # 라즈베리 파이에서 빌드한 이미지 이름
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8000
+          env:
+            - name: RPC_URL
+              valueFrom:
+                secretKeyRef:
+                  name: minecraft-secret
+                  key: RPC_URL
+            - name: PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: minecraft-secret
+                  key: PRIVATE_KEY
+            - name: CONTRACT_ADDRESS
+              valueFrom:
+                secretKeyRef:
+                  name: minecraft-secret
+                  key: CONTRACT_ADDRESS
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubedutch-api-service
+spec:
+  selector:
+    app: kubedutch-api
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
+      nodePort: 30002 # 외부에서 접속할 포트
+  type: NodePort
+
