@@ -3,7 +3,12 @@ from pydantic import BaseModel
 import os
 import json
 from web3 import Web3
-from web3.middleware import geth_poa_middleware
+# v6 호환성을 위해 위치 변경
+try:
+    from web3.middleware import geth_poa_middleware # v5
+except ImportError:
+    from web3.middleware import geth_poa as geth_poa_middleware # v6
+
 from dotenv import load_dotenv
 import uvicorn
 
@@ -33,7 +38,12 @@ async def startup_event():
         return
         
     w3 = Web3(Web3.HTTPProvider(INFURA_URL))
-    w3.middleware_onion.inject(geth_poa_middleware, layer=0)
+    
+    # POA 미들웨어 주입 (Sepolia 등 테스트넷 필수)
+    try:
+        w3.middleware_onion.inject(geth_poa_middleware, layer=0)
+    except Exception:
+        pass # 이미 주입되어 있거나 호환되지 않는 경우 패스
     
     try:
         if w3.is_connected():
