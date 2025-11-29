@@ -24,6 +24,20 @@ docker build -t kubedutch-api:latest .
 ```
 
 ### 3. Kubernetes 배포 (API 서버만)
+> **Note:** 라즈베리 파이 3B 이하 모델에서는 K8s 대신 Docker 직접 실행을 권장합니다.
+
+#### Option A: Docker 직접 실행 (추천 - 가벼움)
+```bash
+sudo docker run -d --restart=always \
+  -p 8000:8000 \
+  -e RPC_URL="https://rpc.sepolia.org" \
+  -e PRIVATE_KEY="0xYOUR_PRIVATE_KEY" \
+  -e CONTRACT_ADDRESS="0xYOUR_CONTRACT_ADDRESS" \
+  --name kubedutch-api \
+  kubedutch-api:latest
+```
+
+#### Option B: Kubernetes 배포 (고성능 모델용)
 마인크래프트 서버를 제외한 가벼운 버전의 K8s 설정 파일입니다.
 ```bash
 # 1. 비밀키 설정 (Sepolia 지갑 정보)

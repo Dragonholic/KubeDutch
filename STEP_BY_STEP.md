@@ -37,6 +37,7 @@
 4.  **정보 가져오기**:
     *   하단 **Deployed Contracts** 섹션에 `UsageLedger`가 생겼을 겁니다.
     *   이름 옆의 **복사 아이콘(📄)**을 눌러서 **`Contract Address`**를 복사해두세요. (예: `0x1234...`)
+    - 
     *   이 주소가 바로 2단계(라즈베리 파이 설정)에서 필요한 주소입니다.
 
     *   👉 **여기서 얻어야 할 것 2가지 (메모장 필수!)**:
@@ -60,28 +61,31 @@ cd KubeDutch
 ```bash
 cd parser
 docker build -t kubedutch-api:latest .
-# (시간이 좀 걸립니다. 커피 한 잔 하세요 ☕)
+# (시간이 좀 걸립니다. 3B 모델이라면 5~10분 정도?)
 cd ..
 ```
 
-### 3. 비밀 정보 입력하기 (중요!)
-아까 1단계에서 얻은 정보를 여기에 입력합니다.
-```bash
-# 아래 명령어의 0x... 부분을 본인 것으로 바꿔서 실행하세요!
-kubectl create secret generic minecraft-secret \
-  --from-literal=RPC_URL="https://rpc.sepolia.org" \
-  --from-literal=PRIVATE_KEY="0x내_지갑_비밀키" \
-  --from-literal=CONTRACT_ADDRESS="0x아까_만든_컨트랙트_주소"
-```
+### 3. 매니저(서버) 실행하기 (Docker Native)
+라즈베리 파이 3B의 성능을 고려하여 가벼운 Docker로 직접 실행합니다.
+(아래 명령어의 `0x...` 부분을 본인 지갑 정보로 바꿔서 **한 줄씩 복사해서** 실행하세요!)
 
-### 4. 매니저(서버) 실행하기
 ```bash
-kubectl apply -f k8s/pi-deployment.yaml
-```
-*   `kubectl get pods`를 쳤을 때 `Running`이라고 뜨면 성공!
-*   `hostname -I`를 쳐서 **라즈베리 파이 IP 주소**를 메모해두세요. (예: `192.168.0.15`)
+# 1. 기존 컨테이너가 있다면 삭제 (깨끗하게 시작)
+sudo docker rm -f kubedutch-api
 
-### 5. 웹 사이트 켜기
+# 2. 서버 실행 (백그라운드 모드)
+sudo docker run -d --restart=always \
+  -p 8000:8000 \
+  -e RPC_URL="https://rpc.sepolia.org" \
+  -e PRIVATE_KEY="0x내_지갑_비밀키" \
+  -e CONTRACT_ADDRESS="0x아까_만든_컨트랙트_주소" \
+  --name kubedutch-api \
+  kubedutch-api:latest
+```
+*   `sudo docker ps`를 쳤을 때 `kubedutch-api`가 보이면 성공!
+*   `hostname -I`를 쳐서 **라즈베리 파이 IP 주소**를 메모해두세요.
+
+### 4. 웹 사이트 켜기
 ```bash
 cd web
 npm install
