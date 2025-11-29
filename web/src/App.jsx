@@ -45,12 +45,20 @@ function App() {
       const filter = contract.filters.UsageLogged();
       const events = await contract.queryFilter(filter, currentBlock - 5000, currentBlock);
 
-      const parsedLogs = events.map(event => ({
-        username: event.args[0],
-        duration: Number(event.args[1]),
-        cost: ethers.formatEther(event.args[2]),
-        timestamp: new Date(Number(event.args[3]) * 1000).toLocaleString()
-      })).reverse();
+      const parsedLogs = events.map(event => {
+        // Handle potential object (Indexed event argument)
+        let uName = event.args[0];
+        if (typeof uName === 'object' && uName !== null) {
+          uName = uName.hash || "Unknown";
+        }
+
+        return {
+          username: uName,
+          duration: Number(event.args[1]),
+          cost: ethers.formatEther(event.args[2]),
+          timestamp: new Date(Number(event.args[3]) * 1000).toLocaleString()
+        };
+      }).reverse();
 
       setLogs(parsedLogs);
       

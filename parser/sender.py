@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 # 1. 설정
 # 라즈베리 파이의 IP 주소 (예: 192.168.0.10)를 입력하세요.
 # 라즈베리 파이에서 'hostname -I' 명령어로 IP 확인 가능
-RASPBERRY_PI_IP = "192.168.0.14" 
+RASPBERRY_PI_IP = "127.0.0.1" 
 API_URL = f"http://{RASPBERRY_PI_IP}:8000/log"
 
 # PC에 있는 마인크래프트 로그 파일 경로 (본인 환경에 맞게 수정!)
