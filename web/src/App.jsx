@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 
 // IMPORTANT: Replace with your deployed contract address!
-const CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000000"; 
+const CONTRACT_ADDRESS = "0x9b30FA9E01cF86AE9C39d22aD46819Af782bcdc7"; 
 
 // Minimum ABI to read events
 const CONTRACT_ABI = [
