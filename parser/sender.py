@@ -11,7 +11,12 @@ RASPBERRY_PI_IP = "127.0.0.1"
 API_URL = f"http://{RASPBERRY_PI_IP}:8000/log"
 
 # PC에 있는 마인크래프트 로그 파일 경로 (본인 환경에 맞게 수정!)
-LOG_FILE_PATH = r"C:\Users\user\Desktop\졸업작품\서버\logs\latest.log"
+LOG_FILE_PATH = os.getenv("MINECRAFT_LOG_PATH", "logs/latest.log")
+
+if not os.path.exists(LOG_FILE_PATH):
+    print(f"⚠️ 경고: 로그 파일을 찾을 수 없습니다: {LOG_FILE_PATH}")
+    print("💡 .env 파일에 MINECRAFT_LOG_PATH를 설정하거나 경로를 확인하세요.")
+
 
 def tail_log_file(path):
     print(f"📂 Watching log file: {path}")
